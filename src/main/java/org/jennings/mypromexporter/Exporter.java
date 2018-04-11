@@ -32,7 +32,7 @@ public class Exporter {
     ServletContextHandler context = new ServletContextHandler();
     context.setContextPath("/");
     server.setHandler(context);
-    context.addServlet(new ServletHolder(new MetricsServletExample()), "/metrics");
+    context.addServlet(new ServletHolder(new MetricsServletExample()), "/");
     server.start();
     server.join();
   }
