@@ -86,7 +86,7 @@ public class MetricsKafkaExample extends HttpServlet {
     public MetricsKafkaExample(CollectorRegistry registry, String brokers) {
         this.registry = registry;
         this.brokers = brokers;
-        g = Gauge.build().name("kafka_" + brokers.replaceAll("-", "_")).help("offsets").labelNames("topic").register();
+        g = Gauge.build().name("kafka_" + brokers.replaceAll("-", "_").replaceAll(".","_")).help("offsets").labelNames("topic").register();
 
         // https://kafka.apache.org/documentation/#consumerconfigs
         props.put("bootstrap.servers", brokers);
