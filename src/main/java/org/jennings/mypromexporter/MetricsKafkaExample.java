@@ -135,7 +135,7 @@ public class MetricsKafkaExample extends HttpServlet {
 
             } else {
                 //System.out.println("NEW");
-                Gauge g = Gauge.build().name(tp).help("offset").register();
+                Gauge g = Gauge.build().name(tp.replaceAll("-", "_")).help("offset").register();
 
                 g.set(cnt);
 
