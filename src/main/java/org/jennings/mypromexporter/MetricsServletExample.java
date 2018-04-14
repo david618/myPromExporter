@@ -1,5 +1,3 @@
-package org.jennings.mypromexporter;
-
 /*
  * (C) Copyright 2017 David Jennings
  *
@@ -21,6 +19,7 @@ package org.jennings.mypromexporter;
  * Extended from https://github.com/prometheus/client_java
  */
 
+package org.jennings.mypromexporter;
 
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;

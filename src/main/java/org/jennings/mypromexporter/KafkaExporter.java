@@ -1,5 +1,3 @@
-package org.jennings.mypromexporter;
-
 /*
  * (C) Copyright 2017 David Jennings
  *
@@ -18,6 +16,9 @@ package org.jennings.mypromexporter;
  * Contributors:
  *     David Jennings
  */
+package org.jennings.mypromexporter;
+
+
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
