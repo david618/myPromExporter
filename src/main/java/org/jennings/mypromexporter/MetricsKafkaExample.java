@@ -54,12 +54,19 @@ public class MetricsKafkaExample extends HttpServlet {
 
     private static final Logger LOG = LogManager.getLogger(MetricsKafkaExample.class);
 
+    /* Promethesus
+    irate(ext_kafka_a1_planes_json_in[5m])
+    
+     */
     // Create Gauge for Each Topic
     HashMap<String, Gauge> topicGauges = new HashMap<>();
     //ArrayList<Gauge> topicGauges = new ArrayList<>();
     //static Gauge g = Gauge.build().name("gauge").help("blah").register();
 
     Properties props = new Properties();
+
+    String brokers;
+    Gauge g;
 
     /**
      * Construct a MetricsKafkaExample for the default registry.
@@ -78,6 +85,8 @@ public class MetricsKafkaExample extends HttpServlet {
      */
     public MetricsKafkaExample(CollectorRegistry registry, String brokers) {
         this.registry = registry;
+        this.brokers = brokers;
+        g = Gauge.build().name("kafka_" + brokers).help("offsets").labelNames("topic").register();
 
         // https://kafka.apache.org/documentation/#consumerconfigs
         props.put("bootstrap.servers", brokers);
@@ -96,64 +105,69 @@ public class MetricsKafkaExample extends HttpServlet {
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
             throws ServletException, IOException {
 
-        Random rnd = new Random();
-
-        //g.set(rnd.nextLong());
-        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
-
-        
-        if (topicGauges.containsKey("planes")) {
-            // Loop through and remove anything that is no longer a topic
-            registry.unregister(topicGauges.get("planes"));
-            topicGauges.remove("planes");
-            
-        }
-
-        Iterator<String> tps = consumer.listTopics().keySet().iterator();
-        while (tps.hasNext()) {
-
-            String tp = tps.next();
-            LOG.debug(tp);
-            //System.out.println(tp);
-
-            List<TopicPartition> partitions = consumer.partitionsFor(tp).stream()
-                    .map(p -> new TopicPartition(tp, p.partition()))
-                    .collect(Collectors.toList());
-            consumer.assign(partitions);
-            consumer.seekToEnd(Collections.emptySet());
-            Map<TopicPartition, Long> endPartitions = partitions.stream()
-                    .collect(Collectors.toMap(Function.identity(), consumer::position));
-            Iterator itTP = endPartitions.entrySet().iterator();
-            long cnt = 0;
-            while (itTP.hasNext()) {
-                Map.Entry tpart = (Map.Entry) itTP.next();
-                cnt += (long) tpart.getValue();
-            }
-
-            if (topicGauges.containsKey(tp)) {
-                topicGauges.get(tp).set(cnt);
-
-            } else {
-                //System.out.println("NEW");
-                Gauge g = Gauge.build().name(tp.replaceAll("-", "_")).help("offset").register();
-
-                g.set(cnt);
-
-                topicGauges.put(tp, g);
-            }
-
-        }
-
-        resp.setStatus(HttpServletResponse.SC_OK);
-        resp.setContentType(TextFormat.CONTENT_TYPE_004);
-
-        Writer writer = resp.getWriter();
         try {
-            TextFormat.write004(writer, registry.filteredMetricFamilySamples(parse(req)));
-            writer.flush();
-        } finally {
-            writer.close();
+//        Random rnd = new Random();
+            //g.set(rnd.nextLong());
+            KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+
+//        if (topicGauges.containsKey("planes")) {
+//            // Loop through and remove anything that is no longer a topic
+//            registry.unregister(topicGauges.get("planes"));
+//            topicGauges.remove("planes");
+//            
+//        }
+            Iterator<String> tps = consumer.listTopics().keySet().iterator();
+
+
+            while (tps.hasNext()) {
+
+                try {
+                    String tp = tps.next();
+                    LOG.debug(tp);
+                    //System.out.println(tp);
+
+                    List<TopicPartition> partitions = consumer.partitionsFor(tp).stream()
+                            .map(p -> new TopicPartition(tp, p.partition()))
+                            .collect(Collectors.toList());
+                    consumer.assign(partitions);
+                    consumer.seekToEnd(Collections.emptySet());
+                    Map<TopicPartition, Long> endPartitions = partitions.stream()
+                            .collect(Collectors.toMap(Function.identity(), consumer::position));
+                    Iterator itTP = endPartitions.entrySet().iterator();
+                    long cnt = 0;
+                    while (itTP.hasNext()) {
+                        Map.Entry tpart = (Map.Entry) itTP.next();
+                        cnt += (long) tpart.getValue();
+                    }
+
+                    //String name = "my_" + tp.replaceAll("-", "_");
+                    //System.out.println("NEW");
+                    //Gauge g = Gauge.build().name(tp.replaceAll("-", "_")).help("offset").register();
+                    Gauge.Child g2 = g.labels(tp);
+
+                    g2.set(cnt);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            resp.setStatus(HttpServletResponse.SC_OK);
+            resp.setContentType(TextFormat.CONTENT_TYPE_004);
+
+            Writer writer = resp.getWriter();
+            try {
+                TextFormat.write004(writer, registry.filteredMetricFamilySamples(parse(req)));
+                writer.flush();
+            } finally {
+                writer.close();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
     }
 
     private Set<String> parse(HttpServletRequest req) {
