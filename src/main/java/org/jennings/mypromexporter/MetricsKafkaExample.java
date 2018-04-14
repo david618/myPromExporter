@@ -1,5 +1,3 @@
-package org.jennings.mypromexporter;
-
 /*
  * (C) Copyright 2017 David Jennings
  *
@@ -20,6 +18,9 @@ package org.jennings.mypromexporter;
  *
  * Extended from https://github.com/prometheus/client_java
  */
+
+package org.jennings.mypromexporter;
+
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.common.TextFormat;
@@ -30,16 +31,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -54,14 +52,23 @@ public class MetricsKafkaExample extends HttpServlet {
 
     private static final Logger LOG = LogManager.getLogger(MetricsKafkaExample.class);
 
-    /* Promethesus
-    irate(ext_kafka_a1_planes_json_in[5m])
+    /*
+    
+    Start Exporter
+    java -jar target/myPromExporter.jar broker.hub-gw01.l4lb.thisdcos.directory:9092 &
+    
+    Configure Prometheus (prometheus.yml)
+      - job_name: 'kafka'
+    static_configs:
+      - targets: ['p1:9093']
+    
+    Raw Values
+    kafka_broker_hub_gw01_l4lb_thisdcos_directory:9092 
+    
+    Rates
+    irate(kafka_broker_hub_gw01_l4lb_thisdcos_directory:9092{topic="ext-kafka-a1-planes-json-in"}[5m])
     
      */
-    // Create Gauge for Each Topic
-    HashMap<String, Gauge> topicGauges = new HashMap<>();
-    //ArrayList<Gauge> topicGauges = new ArrayList<>();
-    //static Gauge g = Gauge.build().name("gauge").help("blah").register();
 
     Properties props = new Properties();
 
@@ -90,8 +97,7 @@ public class MetricsKafkaExample extends HttpServlet {
 
         // https://kafka.apache.org/documentation/#consumerconfigs
         props.put("bootstrap.servers", brokers);
-        // Should include another parameter for group.id this would allow differenct consumers of same topic
-        props.put("group.id", "abc");
+        props.put("group.id", "kafka_exporter");
         props.put("enable.auto.commit", "true");
         props.put("auto.commit.interval.ms", 1000);
         props.put("auto.offset.reset", "earliest");
@@ -106,26 +112,15 @@ public class MetricsKafkaExample extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-//        Random rnd = new Random();
-            //g.set(rnd.nextLong());
             KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
 
-//        if (topicGauges.containsKey("planes")) {
-//            // Loop through and remove anything that is no longer a topic
-//            registry.unregister(topicGauges.get("planes"));
-//            topicGauges.remove("planes");
-//            
-//        }
             Iterator<String> tps = consumer.listTopics().keySet().iterator();
-
 
             while (tps.hasNext()) {
 
                 try {
                     String tp = tps.next();
                     LOG.debug(tp);
-                    //System.out.println(tp);
-
                     List<TopicPartition> partitions = consumer.partitionsFor(tp).stream()
                             .map(p -> new TopicPartition(tp, p.partition()))
                             .collect(Collectors.toList());
@@ -140,9 +135,6 @@ public class MetricsKafkaExample extends HttpServlet {
                         cnt += (long) tpart.getValue();
                     }
 
-                    //String name = "my_" + tp.replaceAll("-", "_");
-                    //System.out.println("NEW");
-                    //Gauge g = Gauge.build().name(tp.replaceAll("-", "_")).help("offset").register();
                     Gauge.Child g2 = g.labels(tp);
 
                     g2.set(cnt);
