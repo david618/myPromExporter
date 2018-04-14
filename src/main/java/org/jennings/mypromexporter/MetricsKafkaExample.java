@@ -113,8 +113,8 @@ public class MetricsKafkaExample extends HttpServlet {
         while (tps.hasNext()) {
 
             String tp = tps.next();
-            LOG.info(tp);
-            System.out.println(tp);
+            LOG.debug(tp);
+            //System.out.println(tp);
 
             List<TopicPartition> partitions = consumer.partitionsFor(tp).stream()
                     .map(p -> new TopicPartition(tp, p.partition()))
@@ -134,7 +134,7 @@ public class MetricsKafkaExample extends HttpServlet {
                 topicGauges.get(tp).set(cnt);
 
             } else {
-                System.out.println("NEW");
+                //System.out.println("NEW");
                 Gauge g = Gauge.build().name(tp).help("offset").register();
 
                 g.set(cnt);

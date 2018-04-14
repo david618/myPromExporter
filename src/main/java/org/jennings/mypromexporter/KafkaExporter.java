@@ -18,24 +18,34 @@ package org.jennings.mypromexporter;
  * Contributors:
  *     David Jennings
  */
-
-
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 public class KafkaExporter {
 
+    public static void main(String[] args) throws Exception {
 
-  public static void main(String[] args) throws Exception {
-    Server server = new Server(1234);
-    ServletContextHandler context = new ServletContextHandler();
-    context.setContextPath("/");
-    server.setHandler(context);
-    String brokers = "k1:9092";
-    context.addServlet(new ServletHolder(new MetricsKafkaExample(brokers)), "/");
-    server.start();
-    server.join();
-  }
+        int numargs = args.length;
+        if (numargs < 1) {
+            System.err.println("You must provide the broker (e.g. broker.hub-gw01.l4lb.thisdcos.directory:9092)");
+            System.err.println("Optionally you can also specify the port to listen on (Default is 9093)");
+        }
+
+        String brokers = args[0];
+
+        Integer port = 9093;
+        if (numargs == 2) {
+            port = Integer.parseInt(args[1]);
+        }
+
+        Server server = new Server(port);
+        ServletContextHandler context = new ServletContextHandler();
+        context.setContextPath("/");
+        server.setHandler(context);        
+        context.addServlet(new ServletHolder(new MetricsKafkaExample(brokers)), "/");
+        server.start();
+        server.join();
+    }
 
 }
