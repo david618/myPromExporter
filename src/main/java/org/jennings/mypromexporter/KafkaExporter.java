@@ -30,6 +30,7 @@ public class KafkaExporter {
         if (numargs < 1) {
             System.err.println("You must provide the broker (e.g. broker.hub-gw01.l4lb.thisdcos.directory:9092)");
             System.err.println("Optionally you can also specify the port to listen on (Default is 9093)");
+            System.exit(1);
         }
 
         String brokers = args[0];
