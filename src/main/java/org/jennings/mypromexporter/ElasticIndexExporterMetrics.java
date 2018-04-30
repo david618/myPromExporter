@@ -100,7 +100,7 @@ public class ElasticIndexExporterMetrics extends HttpServlet {
         this.elasticsearchUrl = elasticsearchURL;
         this.username = username;
         this.password = password;
-        g = Gauge.build().name("my_prom_exporter_elasticsearch").help("counts").labelNames("index").register();
+        g = Gauge.build().name("my_prom_exporter_elasticsearch_indices").help("counts").labelNames("index").register();
     }
 
     @Override
