@@ -46,11 +46,11 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class MetricsKafkaExample extends HttpServlet {
+public class KafkaTopicExporterMetrics extends HttpServlet {
 
     private CollectorRegistry registry;
 
-    private static final Logger LOG = LogManager.getLogger(MetricsKafkaExample.class);
+    private static final Logger LOG = LogManager.getLogger(KafkaTopicExporterMetrics.class);
 
     /*
     
@@ -80,7 +80,7 @@ public class MetricsKafkaExample extends HttpServlet {
      *
      * @param brokers
      */
-    public MetricsKafkaExample(String brokers) {
+    public KafkaTopicExporterMetrics(String brokers) {
         this(CollectorRegistry.defaultRegistry, brokers);
     }
 
@@ -90,10 +90,10 @@ public class MetricsKafkaExample extends HttpServlet {
      * @param registry
      * @param brokers
      */
-    public MetricsKafkaExample(CollectorRegistry registry, String brokers) {
+    public KafkaTopicExporterMetrics(CollectorRegistry registry, String brokers) {
         this.registry = registry;
         this.brokers = brokers;
-        g = Gauge.build().name("kafka_" + brokers.replaceAll("-", "_").replaceAll("\\.","_")).help("offsets").labelNames("topic").register();
+        g = Gauge.build().name("my_prom_exporter_kafka_").help("offsets").labelNames("topic").register();
 
         // https://kafka.apache.org/documentation/#consumerconfigs
         props.put("bootstrap.servers", brokers);
@@ -140,7 +140,7 @@ public class MetricsKafkaExample extends HttpServlet {
                     g2.set(cnt);
 
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOG.error("ERROR", e);
                 }
 
             }
@@ -156,8 +156,8 @@ public class MetricsKafkaExample extends HttpServlet {
                 writer.close();
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            LOG.error("ERROR", e);
         }
 
     }

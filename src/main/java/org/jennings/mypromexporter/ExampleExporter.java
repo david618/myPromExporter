@@ -24,7 +24,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
-public class Exporter {
+public class ExampleExporter {
 
 
   public static void main(String[] args) throws Exception {
@@ -32,7 +32,7 @@ public class Exporter {
     ServletContextHandler context = new ServletContextHandler();
     context.setContextPath("/");
     server.setHandler(context);
-    context.addServlet(new ServletHolder(new MetricsServletExample()), "/");
+    context.addServlet(new ServletHolder(new ExampleExporterMetrics()), "/");
     server.start();
     server.join();
   }

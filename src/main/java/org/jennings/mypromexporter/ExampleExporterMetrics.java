@@ -40,7 +40,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-public class MetricsServletExample extends HttpServlet {
+public class ExampleExporterMetrics extends HttpServlet {
 
     private CollectorRegistry registry;
 
@@ -53,14 +53,14 @@ public class MetricsServletExample extends HttpServlet {
     /**
      * Construct a MetricsServlet for the default registry.
      */
-    public MetricsServletExample() {
+    public ExampleExporterMetrics() {
         this(CollectorRegistry.defaultRegistry);
     }
 
     /**
      * Construct a MetricsServlet for the given registry.
      */
-    public MetricsServletExample(CollectorRegistry registry) {
+    public ExampleExporterMetrics(CollectorRegistry registry) {
         this.registry = registry;
     }
 

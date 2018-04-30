@@ -23,29 +23,41 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
-public class KafkaExporter {
+public class ElasticIndexExporter {
 
     public static void main(String[] args) throws Exception {
 
         int numargs = args.length;
-        if (numargs < 1) {
-            System.err.println("You must provide the broker (e.g. broker.hub-gw01.l4lb.thisdcos.directory:9092)");
-            System.err.println("Optionally you can also specify the port to listen on (Default is 9093)");
+        if (numargs < 1 || numargs > 4) {
+            System.err.println("You must provide the Elasticsearch url (e.g. http://coordinator.sats-ds01.l4lb.thisdcos.directory:9200)");           
+            System.err.println("Optionally you can also specify the exporter port (Default is 9093)");
+            System.err.println("If needed you can provide Elasticsearch username and password.");
+            System.err.println("For example: ElasticIndexExporter coordinator.sats-ds01.l4lb.thisdcos.directory 9201 elastic changeme");
             System.exit(1);
         }
 
-        String brokers = args[0];
+        String elasticSearchUrl = args[0];
 
-        Integer port = 9093;
+        Integer port = 9201;
         if (numargs == 2) {
             port = Integer.parseInt(args[1]);
         }
+        
+        String username = "";
+        String password = "";
+        if (numargs >= 3) {
+            username = args[2];
+        }
+        if (numargs >= 4) {
+            password = args[3];
+        }
+        
 
         Server server = new Server(port);
         ServletContextHandler context = new ServletContextHandler();
-        context.setContextPath("/");
+        context.setContextPath("/metrics");
         server.setHandler(context);        
-        context.addServlet(new ServletHolder(new MetricsKafkaExample(brokers)), "/");
+        context.addServlet(new ServletHolder(new ElasticIndexExporterMetrics(elasticSearchUrl, username, password)), "/");
         server.start();
         server.join();
     }
