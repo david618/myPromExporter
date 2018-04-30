@@ -57,7 +57,7 @@ public class ElasticIndexExporter {
         ServletContextHandler context = new ServletContextHandler();
         context.setContextPath("/metrics");
         server.setHandler(context);        
-        context.addServlet(new ServletHolder(new ElasticIndexExporterMetrics(elasticSearchUrl, username, password)), "/");
+        context.addServlet(new ServletHolder(new ElasticIndexExporterMetrics(elasticSearchUrl, username, password)), "/metrics");
         server.start();
         server.join();
     }

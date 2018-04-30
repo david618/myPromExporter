@@ -45,7 +45,7 @@ public class KafkaTopicExporter {
         ServletContextHandler context = new ServletContextHandler();
         context.setContextPath("/metrics");
         server.setHandler(context);        
-        context.addServlet(new ServletHolder(new KafkaTopicExporterMetrics(brokers)), "/");
+        context.addServlet(new ServletHolder(new KafkaTopicExporterMetrics(brokers)), "/metrics");
         server.start();
         server.join();
     }
