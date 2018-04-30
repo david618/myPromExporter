@@ -43,14 +43,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.log4j.Logger;
+
 
 public class KafkaTopicExporterMetrics extends HttpServlet {
 
     private CollectorRegistry registry;
 
-    private static final Logger LOG = LogManager.getLogger(KafkaTopicExporterMetrics.class);
+    private static final Logger LOG = Logger.getLogger(KafkaTopicExporterMetrics.class);
 
     /*
     
@@ -93,7 +93,7 @@ public class KafkaTopicExporterMetrics extends HttpServlet {
     public KafkaTopicExporterMetrics(CollectorRegistry registry, String brokers) {
         this.registry = registry;
         this.brokers = brokers;
-        g = Gauge.build().name("my_prom_exporter_kafka_").help("offsets").labelNames("topic").register();
+        g = Gauge.build().name("my_prom_exporter_kafka_topics").help("offsets").labelNames("topic").register();
 
         // https://kafka.apache.org/documentation/#consumerconfigs
         props.put("bootstrap.servers", brokers);
@@ -120,7 +120,7 @@ public class KafkaTopicExporterMetrics extends HttpServlet {
 
                 try {
                     String tp = tps.next();
-                    LOG.info(tp);
+                    LOG.debug(tp);
                     List<TopicPartition> partitions = consumer.partitionsFor(tp).stream()
                             .map(p -> new TopicPartition(tp, p.partition()))
                             .collect(Collectors.toList());

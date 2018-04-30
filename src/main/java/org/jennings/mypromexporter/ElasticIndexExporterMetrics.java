@@ -56,9 +56,9 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.log4j.Logger;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -67,7 +67,7 @@ public class ElasticIndexExporterMetrics extends HttpServlet {
 
     private CollectorRegistry registry;
 
-    private static final Logger LOG = LogManager.getLogger(ElasticIndexExporterMetrics.class);
+    private static final Logger LOG = Logger.getLogger(ElasticIndexExporterMetrics.class);
 
     Properties props = new Properties();
 
@@ -100,7 +100,7 @@ public class ElasticIndexExporterMetrics extends HttpServlet {
         this.elasticsearchUrl = elasticsearchURL;
         this.username = username;
         this.password = password;
-        g = Gauge.build().name("my_prom_exporter_elasticsearch_").help("counts").labelNames("index").register();
+        g = Gauge.build().name("my_prom_exporter_elasticsearch").help("counts").labelNames("index").register();
     }
 
     @Override
