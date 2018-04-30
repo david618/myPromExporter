@@ -120,7 +120,7 @@ public class KafkaTopicExporterMetrics extends HttpServlet {
 
                 try {
                     String tp = tps.next();
-                    LOG.trace(tp);
+                    LOG.info(tp);
                     List<TopicPartition> partitions = consumer.partitionsFor(tp).stream()
                             .map(p -> new TopicPartition(tp, p.partition()))
                             .collect(Collectors.toList());
