@@ -105,6 +105,16 @@ sum by (index)(irate(my_prom_exporter_elasticsearch_indices[5m]))
 
 ```
 
+### Enviroment Config
+
+```
+ELASTICURL=http://coordinator.sats-ds01.l4lb.thisdcos.directory:9200
+PORT=9201
+USERNAME=
+PASSWORD=
+```
+
+
 
 ### systemd Service
 
