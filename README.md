@@ -2,12 +2,12 @@
 Project to Learn how to Create a Prometheus Exporter
 
 
-## Run Command Line
+## Run Command Line (Kafka Topic Exporter)
 
 You can run at command line.
 
 ```
-java -jar target/myPromExporter.jar broker.hub-gw01.l4lb.thisdcos.directory:9092 &
+java -cp target/myPromExporter.jar org.jennings.mypromexporter.KafkaTopicExporter broker.hub-gw01.l4lb.thisdcos.directory:9092
 ```
 
 ## Configure Promethesus 
@@ -15,28 +15,31 @@ java -jar target/myPromExporter.jar broker.hub-gw01.l4lb.thisdcos.directory:9092
 Added this to the scrape_configs in promethesus.yml.
 
 ```
-  - job_name: 'kafka'
+  - job_name: 'a4iot_exporters'
     static_configs:
-      - targets: ['p1:9093']      
+      - targets: ['p1:9308','p1:9201']  
 ```
 
 ## Query 
 
-Kafka Exporter currently returns metrics with the broker prefix.   Turned dashes and periods into underscores.
+Kafka Topic Exporter returns gauge `my_prom_exporter_kafka_topics`.   
+
+A child gauge is added to the gauge fro each topic.
 
 Sample Queries:
 
 ```
 Raw Value:
-kafka_broker_hub_gw01_l4lb_thisdcos_directory:9092
+my_prom_exporter_kafka_topics
 
 Rate: 
-irate(kafka_broker_hub_gw01_l4lb_thisdcos_directory:9092[5m])
+sum by (topic)(irate(my_prom_exporter_kafka_topics[5m]))
 
-Used label for each topic so you can filter.
+Use filter to limit to single topic.
 
 Rate for Topic ext-kafka-a1-planes-json-in
-irate(kafka_broker_hub_gw01_l4lb_thisdcos_directory:9092{topic="ext-kafka-a1-planes-json-in"}[5m])
+ sum by (topic)(irate(my_prom_exporter_kafka_topics{topic="ext-kafka-a1-planes-json-in"}[5m]))
+
 ```
 
 ## Create Systemd Service
@@ -51,11 +54,11 @@ Contents of kafka_exporter_env
 BROKER=broker.hub-gw01.l4lb.thisdcos.directory:9092
 ```
 
-Create `/etc/systemd/system/kafka_exporter.service`.
+Create `cat /etc/systemd/system/a4iot_kafka_topic_exporter.service`.
 
 ```
 [Unit]
-Description=Kafka Explorer
+Description=a4iot Kafka Topic Explorer
 After=network.target
 
 [Service]
@@ -63,9 +66,9 @@ Type=simple
 User=prometheus
 Group=prometheus
 
-EnvironmentFile=/opt/prometheus/kafka_exporter/kafka_exporter_env
+EnvironmentFile=/opt/prometheus/a4iot_exporter/kafka_exporter_env
 ExecStart=
-ExecStart=/bin/java -jar /opt/prometheus/kafka_exporter/myPromExporter-full.jar ${BROKER}
+ExecStart=/bin/java -cp /opt/prometheus/a4iot_exporter/myPromExporter-full.jar org.jennings.mypromexporter.KafkaTopicExporter ${BROKER}
 
 [Install]
 WantedBy=multi-user.target
@@ -79,4 +82,48 @@ systemctl start kafka_exporter
 ```
 
 Now the exporter will run as a service.
+
+
+## Elastic Index Exporter
+
+This is very similaar to the Kafka Topic Exporter.
+
+### Command Line
+
+```
+java -cp target/myPromExporter.jar org.jennings.mypromexporter.ElasticIndexExporter http://coordinator.sats-ds01.l4lb.thisdcos.directory:9200
+```
+
+### Query
+
+```
+my_prom_exporter_elasticsearch_indices
+
+
+sum by (index)(irate(my_prom_exporter_elasticsearch_indices[5m]))
+
+
+```
+
+
+### systemd Service
+
+```
+cat /etc/systemd/system/a4iot_elastic_index_exporter.service
+[Unit]
+Description=a4iot Elastic Index Explorer
+After=network.target
+
+[Service]
+Type=simple
+User=prometheus
+Group=prometheus
+
+EnvironmentFile=/opt/prometheus/a4iot_exporter/elastic_exporter_env
+ExecStart=
+ExecStart=/bin/java -cp /opt/prometheus/a4iot_exporter/myPromExporter-full.jar org.jennings.mypromexporter.ElasticIndexExporter ${ELASTICURL} ${PORT} ${USERNAME} ${PASSWORD}
+
+[Install]
+WantedBy=multi-user.target
+```
 
