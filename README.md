@@ -17,7 +17,7 @@ Added this to the scrape_configs in promethesus.yml.
 ```
   - job_name: 'a4iot_exporters'
     static_configs:
-      - targets: ['p1:9308','p1:9201']  
+      - targets: ['p1:9093','p1:9201']  
 ```
 
 ## Query 
